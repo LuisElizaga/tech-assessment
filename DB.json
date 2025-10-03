@@ -54775,5 +54775,27 @@
     "email": "yoshua.rincon@gmail.es",
     "phone": "+573214665867",
     "isActive": true
+  },
+  {
+    "id": {
+      "$oid": "c6oottx1s7vmgbbockr"
+    },
+    "name": "Test",
+    "lastName": "User",
+    "username": "TUser",
+    "email": "test@test.com",
+    "phone": "123456789",
+    "isActive": true
+  },
+  {
+    "id": {
+      "$oid": "wldid3b4sgmgbbssew"
+    },
+    "name": "Maria Luisa",
+    "lastName": "Calderín",
+    "username": "mcalde56",
+    "email": "mcalderin@hotmail.com",
+    "phone": "667245433",
+    "isActive": true
   }
 ]

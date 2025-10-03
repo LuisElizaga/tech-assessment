@@ -6,7 +6,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getUsers(
+  async getUsers(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -24,27 +24,27 @@ export class UsersController {
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string) {
+  async getUserById(@Param('id') id: string) {
     return this.usersService.getUserById(id);
   }
 
   @Post()
-  createUser(@Body() userData: any) {
+  async createUser(@Body() userData: any) {
     return this.usersService.createUser(userData);
   }
 
   @Put(':id')
-  updateUser(@Param('id') id: string, @Body() userData: any) {
+  async updateUser(@Param('id') id: string, @Body() userData: any) {
     return this.usersService.updateUser(id, userData);
   }
 
   @Patch(':id/deactivate')
-  deactivateUser(@Param('id') id: string) {
+  async deactivateUser(@Param('id') id: string) {
     return this.usersService.deactivateUser(id);
   }
 
   @Patch(':id/activate')
-  activateUser(@Param('id') id: string) {
+  async activateUser(@Param('id') id: string) {
     return this.usersService.activateUser(id);
   }
 }

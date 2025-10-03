@@ -89,6 +89,7 @@ npm run start:frontend
 4. **Compresión de imágenes:** Reducción automática antes de guardar
 5. **Filtrado en servidor:** Toda la lógica de búsqueda en el backend
 6. **Lazy loading:** Carga de datos bajo demanda
+7. **I/O Asíncrono:** Operaciones de lectura/escritura de archivos no bloqueantes (async/await)
 
 ## Diseño UI/UX
 
@@ -233,6 +234,7 @@ Response: { "message": "servidor activo" }
 - Soporte completo para campo username
 - Auto-generación para usuarios sin username
 - Comentarios traducidos al español
+- **I/O Asíncrono implementado:** Todas las operaciones de lectura/escritura de archivos ahora usan async/await para evitar bloqueos del event loop
 
 ### UI/UX Refinado
 - Logo oficial de Ucademy en sidebar

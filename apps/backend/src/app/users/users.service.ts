@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
 
 interface User {
@@ -23,24 +23,34 @@ interface GetUsersParams {
 @Injectable()
 export class UsersService {
   private users: User[] = [];
+  private isLoaded = false;
 
   constructor() {
     this.loadUsers();
   }
 
-  private loadUsers() {
+  private async loadUsers() {
     try {
       const dbPath = path.join(process.cwd(), 'DB.json');
-      const fileContent = fs.readFileSync(dbPath, 'utf-8');
+      const fileContent = await fs.readFile(dbPath, 'utf-8');
       this.users = JSON.parse(fileContent);
+      this.isLoaded = true;
       // Usuarios cargados correctamente
     } catch (error) {
       // Error al cargar usuarios
       this.users = [];
+      this.isLoaded = true;
     }
   }
 
-  getUsers(params: GetUsersParams) {
+  private async ensureLoaded() {
+    if (!this.isLoaded) {
+      await this.loadUsers();
+    }
+  }
+
+  async getUsers(params: GetUsersParams) {
+    await this.ensureLoaded();
     let filteredUsers = [...this.users];
 
     // Aplicar filtro de búsqueda
@@ -84,12 +94,14 @@ export class UsersService {
   }
 
   // Método para obtener todos los usuarios sin paginación
-  getAllUsers() {
+  async getAllUsers() {
+    await this.ensureLoaded();
     return this.users;
   }
 
   // Obtener usuario por ID
-  getUserById(id: string) {
+  async getUserById(id: string) {
+    await this.ensureLoaded();
     const user = this.users.find(u => u.id && u.id.$oid === id);
     if (!user) {
       throw new Error('User not found');
@@ -98,7 +110,8 @@ export class UsersService {
   }
 
   // Crear nuevo usuario
-  createUser(userData: Omit<User, 'id'>) {
+  async createUser(userData: Omit<User, 'id'>) {
+    await this.ensureLoaded();
     const username = userData.username || this.generateUsername(userData.name, userData.lastName);
 
     const newUser: User = {
@@ -113,12 +126,13 @@ export class UsersService {
     };
 
     this.users.push(newUser);
-    this.saveUsers();
+    await this.saveUsers();
     return newUser;
   }
 
   // Actualizar usuario
-  updateUser(id: string, userData: Partial<Omit<User, 'id'>>) {
+  async updateUser(id: string, userData: Partial<Omit<User, 'id'>>) {
+    await this.ensureLoaded();
     const userIndex = this.users.findIndex(u => u.id && u.id.$oid === id);
     if (userIndex === -1) {
       throw new Error('User not found');
@@ -129,17 +143,17 @@ export class UsersService {
       ...userData,
     };
 
-    this.saveUsers();
+    await this.saveUsers();
     return this.users[userIndex];
   }
 
   // Desactivar usuario (eliminación lógica)
-  deactivateUser(id: string) {
+  async deactivateUser(id: string) {
     return this.updateUser(id, { isActive: false });
   }
 
   // Activar usuario
-  activateUser(id: string) {
+  async activateUser(id: string) {
     return this.updateUser(id, { isActive: true });
   }
 
@@ -157,7 +171,7 @@ export class UsersService {
     return firstLetter + firstLastName;
   }
 
-  private addUsernamesToExistingUsers() {
+  private async addUsernamesToExistingUsers() {
     let needsSave = false;
     let count = 0;
 
@@ -172,17 +186,17 @@ export class UsersService {
     // Se encontraron usuarios sin username
 
     if (needsSave) {
-      this.saveUsers();
+      await this.saveUsers();
       // Usernames generados para usuarios existentes
     } else {
       // Todos los usuarios ya tienen username
     }
   }
 
-  private saveUsers() {
+  private async saveUsers() {
     try {
       const dbPath = path.join(process.cwd(), 'DB.json');
-      fs.writeFileSync(dbPath, JSON.stringify(this.users, null, 2));
+      await fs.writeFile(dbPath, JSON.stringify(this.users, null, 2));
       // Usuarios guardados correctamente
     } catch (error) {
       // Error al guardar usuarios
