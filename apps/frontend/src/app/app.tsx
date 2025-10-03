@@ -1,16 +1,12 @@
-import styled from 'styled-components';
-
-import NxWelcome from './nx-welcome';
-
-const StyledApp = styled.div`
-  // Your style here
-`;
+import React from 'react';
+import { Layout } from './components/Layout';
+import { UserListRefBased } from './components/UserListRefBased';
 
 export function App() {
   return (
-    <StyledApp>
-      <NxWelcome title="frontend" />
-    </StyledApp>
+    <Layout>
+      <UserListRefBased />
+    </Layout>
   );
 }
 

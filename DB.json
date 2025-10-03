@@ -7,7 +7,7 @@
     "lastName": "Huleatt",
     "email": "dhuleatt0@illinois.edu",
     "phone": "(142) 3095547",
-    "isActive": false
+    "isActive": true
   },
   {
     "id": {
@@ -25,8 +25,8 @@
     },
     "name": "Eugenio",
     "lastName": "Scade",
-    "email": "escade2@hostgator.com",
-    "phone": null,
+    "email": "escade3@hostgator.com",
+    "phone": "34669845045",
     "isActive": false
   },
   {
@@ -77,7 +77,7 @@
     "lastName": "Hayer",
     "email": "ahayer7@squidoo.com",
     "phone": "(209) 6744608",
-    "isActive": true
+    "isActive": false
   },
   {
     "id": {
@@ -49706,5 +49706,35 @@
     "email": "rcouragerr@wikimedia.org",
     "phone": "(993) 3184574",
     "isActive": true
+  },
+  {
+    "id": {
+      "$oid": "xwhjb3rbkjmgau35nw"
+    },
+    "name": "Luis",
+    "lastName": "Elizaga",
+    "email": "luiselizaga70@gmail.com",
+    "phone": "+573043698918",
+    "isActive": true
+  },
+  {
+    "id": {
+      "$oid": "gf85v7nmmjqmgav8d74"
+    },
+    "name": "Angie",
+    "lastName": "Sánchez",
+    "email": "angelicasan2@hotmail.com",
+    "phone": "3214665867",
+    "isActive": true
+  },
+  {
+    "id": {
+      "$oid": "w39hk53x25mgawkj3y"
+    },
+    "name": "Pedro",
+    "lastName": "Rodríguez Santos",
+    "email": "Pedroro37@gmail.com",
+    "phone": "669845045",
+    "isActive": false
   }
 ]
