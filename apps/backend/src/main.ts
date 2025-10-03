@@ -1,6 +1,6 @@
 /**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
+ * Servidor backend de la aplicación
+ * Sistema de gestión de usuarios para academias
  */
 
 import { Logger } from '@nestjs/common';
@@ -13,7 +13,11 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 
-  // Enable CORS for frontend
+  // Configurar body parser para cargas grandes (imágenes)
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
+
+  // Habilitar CORS para el frontend
   app.enableCors({
     origin: 'http://localhost:4200',
     credentials: true,

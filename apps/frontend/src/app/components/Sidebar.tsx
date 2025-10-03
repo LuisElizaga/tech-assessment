@@ -4,6 +4,7 @@ import logoUcademy from '../../assets/logoUcademy.png';
 
 interface SidebarProps {
   activeItem?: string;
+  onMenuClick?: () => void;
 }
 
 const SidebarContainer = styled.div`
@@ -83,7 +84,7 @@ const UserIcon = () => (
 );
 
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'alumnos' }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'alumnos', onMenuClick }) => {
   return (
     <SidebarContainer>
       <LogoSection>
@@ -92,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeItem = 'alumnos' }) => {
       </LogoSection>
 
       <MenuSection>
-        <MenuItem active={activeItem === 'alumnos'}>
+        <MenuItem active={activeItem === 'alumnos'} onClick={onMenuClick}>
           <MenuIcon active={activeItem === 'alumnos'}>
             <UserIcon />
           </MenuIcon>

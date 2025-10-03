@@ -8,6 +8,7 @@ interface User {
   id: { $oid: string };
   name: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string | null;
   isActive: boolean;
@@ -37,6 +38,8 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
 `;
 
 const TitleSection = styled.div``;
@@ -50,6 +53,52 @@ const Title = styled.h1`
 const Subtitle = styled.p`
   color: #6b7280;
   margin: 4px 0 0 0;
+`;
+
+const HeaderControls = styled.div`
+  display: flex;
+  gap: 16px;
+  align-items: center;
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const SearchInput = styled.input`
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 300px;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const SearchButton = styled.button`
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #4b5563;
+  }
 `;
 
 const AddButton = styled.button`
@@ -257,10 +306,17 @@ const ToggleSlider = styled.span`
   }
 `;
 
-export const UserListRefBased: React.FC = () => {
+interface UserListRefBasedProps {
+  onUserClick: (userId: string) => void;
+  onShowToast: (message: string) => void;
+}
+
+export const UserListRefBased: React.FC<UserListRefBasedProps> = ({ onUserClick, onShowToast }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [metadata, setMetadata] = useState({
     totalItems: 0,
     totalPages: 1,
@@ -282,6 +338,10 @@ export const UserListRefBased: React.FC = () => {
         limit: '50',
       });
 
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+
       const response = await axios.get<UsersResponse>(
         `http://localhost:3000/api/users?${params}`
       );
@@ -293,7 +353,7 @@ export const UserListRefBased: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, searchTerm]);
 
   useEffect(() => {
     fetchUsers();
@@ -320,7 +380,7 @@ export const UserListRefBased: React.FC = () => {
     const currentPage = page;
     const buttons = [];
 
-    // Always show first page
+    // Siempre mostrar primera página
     buttons.push(
       <PageButton
         key={1}
@@ -331,12 +391,12 @@ export const UserListRefBased: React.FC = () => {
       </PageButton>
     );
 
-    // Show ellipsis if there's a gap
+    // Mostrar puntos suspensivos si hay un salto
     if (currentPage > 4) {
       buttons.push(<PageEllipsis key="ellipsis1">...</PageEllipsis>);
     }
 
-    // Show pages around current page
+    // Mostrar páginas alrededor de la página actual
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -352,12 +412,12 @@ export const UserListRefBased: React.FC = () => {
       );
     }
 
-    // Show ellipsis if there's a gap
+    // Mostrar puntos suspensivos si hay un salto
     if (currentPage < totalPages - 3) {
       buttons.push(<PageEllipsis key="ellipsis2">...</PageEllipsis>);
     }
 
-    // Always show last page if more than 1 page
+    // Siempre mostrar última página si hay más de 1 página
     if (totalPages > 1) {
       buttons.push(
         <PageButton
@@ -396,7 +456,7 @@ export const UserListRefBased: React.FC = () => {
   const closeConfirmModal = useCallback(() => {
     setIsConfirmModalOpen(false);
     setUserToDeactivate(null);
-    // Clean up pending data if canceling
+    // Limpiar datos pendientes si se cancela
     if ((window as any).pendingUserData) {
       delete (window as any).pendingUserData;
     }
@@ -406,50 +466,53 @@ export const UserListRefBased: React.FC = () => {
     try {
       await axios.post('http://localhost:3000/api/users', userData);
       closeUserModal();
+      onShowToast('Registro guardado correctamente');
       fetchUsers();
     } catch (err) {
       console.error('Error creating user:', err);
     }
-  }, [fetchUsers, closeUserModal]);
+  }, [fetchUsers, closeUserModal, onShowToast]);
 
   const handleUpdateUser = useCallback(async (userData: Omit<User, 'id'>) => {
     if (!selectedUser?.id?.$oid) return;
     try {
       await axios.put(`http://localhost:3000/api/users/${selectedUser.id.$oid}`, userData);
       closeUserModal();
+      onShowToast('Registro guardado correctamente');
       fetchUsers();
     } catch (err) {
       console.error('Error updating user:', err);
     }
-  }, [selectedUser, fetchUsers, closeUserModal]);
+  }, [selectedUser, fetchUsers, closeUserModal, onShowToast]);
 
   const handleDeactivateUser = useCallback(async () => {
     if (!userToDeactivate?.id?.$oid) return;
     try {
-      // Use the pending data if available, otherwise just deactivate
+      // Usar los datos pendientes si están disponibles, si no solo desactivar
       const pendingData = (window as any).pendingUserData;
       if (pendingData) {
         await axios.put(`http://localhost:3000/api/users/${userToDeactivate.id.$oid}`, pendingData);
-        // Clean up pending data
+        // Limpiar datos pendientes
         delete (window as any).pendingUserData;
       } else {
         await axios.patch(`http://localhost:3000/api/users/${userToDeactivate.id.$oid}/deactivate`);
       }
       closeConfirmModal();
-      closeUserModal(); // Also close the user modal
+      closeUserModal(); // También cerrar el modal de usuario
+      onShowToast('Registro guardado correctamente');
       fetchUsers();
     } catch (err) {
       console.error('Error deactivating user:', err);
     }
-  }, [userToDeactivate, fetchUsers, closeConfirmModal, closeUserModal]);
+  }, [userToDeactivate, fetchUsers, closeConfirmModal, closeUserModal, onShowToast]);
 
   const handleToggleStatus = useCallback(async (user: User) => {
     if (user.isActive) {
-      // If deactivating, show confirmation
+      // Si se desactiva, mostrar confirmación
       setUserToDeactivate(user);
       setIsConfirmModalOpen(true);
     } else {
-      // If activating, do it directly
+      // Si se activa, hacerlo directamente
       try {
         await axios.put(`http://localhost:3000/api/users/${user.id.$oid}`, {
           name: user.name,
@@ -465,15 +528,37 @@ export const UserListRefBased: React.FC = () => {
     }
   }, [fetchUsers]);
 
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  }, []);
+
+  const handleSearchSubmit = useCallback((e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSearchTerm(searchInput);
+    setPage(1); // Volver a la primera página al buscar
+  }, [searchInput]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  }, [handleSearchSubmit]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  }, []);
+
   const handleUserModalSave = useCallback((userData: Omit<User, 'id'>, isDeactivating?: boolean) => {
     if (isDeactivating && selectedUser) {
-      // Store the user to deactivate and show confirmation modal
+      // Guardar el usuario a desactivar y mostrar modal de confirmación
       setUserToDeactivate(selectedUser);
       setIsConfirmModalOpen(true);
-      // Store the updated data temporarily
+      // Guardar los datos actualizados temporalmente
       (window as any).pendingUserData = userData;
     } else {
-      // Normal save flow
+      // Flujo normal de guardado
       if (selectedUser) {
         handleUpdateUser(userData);
       } else {
@@ -497,9 +582,28 @@ export const UserListRefBased: React.FC = () => {
           <Title>Alumnos</Title>
           <Subtitle>{metadata.totalItems} elementos</Subtitle>
         </TitleSection>
-        <AddButton onClick={openCreateModal}>
-          + Nuevo alumno
-        </AddButton>
+        <HeaderControls>
+          <SearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="Buscar por nombre, apellido, usuario, email o teléfono..."
+              value={searchInput}
+              onChange={handleSearchInputChange}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchButton onClick={handleSearchSubmit}>
+              Buscar
+            </SearchButton>
+            {searchTerm && (
+              <SearchButton onClick={handleClearSearch} style={{ backgroundColor: '#ef4444' }}>
+                Limpiar
+              </SearchButton>
+            )}
+          </SearchContainer>
+          <AddButton onClick={openCreateModal}>
+            + Nuevo alumno
+          </AddButton>
+        </HeaderControls>
       </Header>
 
       <Table>
@@ -514,14 +618,14 @@ export const UserListRefBased: React.FC = () => {
         </Thead>
         <Tbody>
           {users.map((user) => (
-            <Tr key={user.id?.$oid || Math.random()} onClick={() => openEditModal(user)}>
+            <Tr key={user.id?.$oid || Math.random()} onClick={() => user.id?.$oid && onUserClick(user.id.$oid)}>
               <Td>
                 <StatusBadge isActive={user.isActive}>
                   {user.isActive ? 'Activo' : 'Inactivo'}
                 </StatusBadge>
               </Td>
               <Td>{user.name || '-'} {user.lastName || '-'}</Td>
-              <Td>Nombre de usuario</Td>
+              <Td>{user.username || '-'}</Td>
               <Td>{user.email || '-'}</Td>
               <Td>{user.phone || '-'}</Td>
             </Tr>

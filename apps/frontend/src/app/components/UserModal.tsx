@@ -5,6 +5,7 @@ interface User {
   id?: { $oid: string };
   name: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string | null;
   isActive: boolean;
@@ -223,6 +224,7 @@ export const UserModal: React.FC<UserModalProps> = ({
   const [formData, setFormData] = useState({
     name: '',
     lastName: '',
+    username: '',
     email: '',
     phone: '',
     isActive: true
@@ -235,6 +237,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       setFormData({
         name: user.name || '',
         lastName: user.lastName || '',
+        username: user.username || '',
         email: user.email || '',
         phone: user.phone || '',
         isActive: user.isActive
@@ -243,6 +246,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       setFormData({
         name: '',
         lastName: '',
+        username: '',
         email: '',
         phone: '',
         isActive: true
@@ -260,6 +264,10 @@ export const UserModal: React.FC<UserModalProps> = ({
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'El apellido es requerido';
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = 'El nombre de usuario es requerido';
     }
 
     if (!formData.email.trim()) {
@@ -282,6 +290,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       onSave({
         name: formData.name.trim(),
         lastName: formData.lastName.trim(),
+        username: formData.username.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim() || null,
         isActive: formData.isActive
@@ -336,6 +345,18 @@ export const UserModal: React.FC<UserModalProps> = ({
               required
             />
             {errors.lastName && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.lastName}</span>}
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Nombre de usuario *</Label>
+            <Input
+              type="text"
+              value={formData.username}
+              onChange={(e) => handleInputChange('username', e.target.value)}
+              placeholder="Ingresa el nombre de usuario"
+              required
+            />
+            {errors.username && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.username}</span>}
           </FormGroup>
 
           <FormGroup>

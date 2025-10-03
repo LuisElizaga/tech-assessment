@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 
 interface LayoutProps {
   children: React.ReactNode;
+  onNavigateHome?: () => void;
 }
 
 const LayoutContainer = styled.div`
@@ -18,10 +19,10 @@ const MainContent = styled.main`
   min-height: 100vh;
 `;
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, onNavigateHome }) => {
   return (
     <LayoutContainer>
-      <Sidebar activeItem="alumnos" />
+      <Sidebar activeItem="alumnos" onMenuClick={onNavigateHome} />
       <MainContent>
         {children}
       </MainContent>

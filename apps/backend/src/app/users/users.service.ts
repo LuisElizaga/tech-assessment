@@ -6,9 +6,11 @@ interface User {
   id: { $oid: string };
   name: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string | null;
   isActive: boolean;
+  photo?: string;
 }
 
 interface GetUsersParams {
@@ -31,9 +33,9 @@ export class UsersService {
       const dbPath = path.join(process.cwd(), 'DB.json');
       const fileContent = fs.readFileSync(dbPath, 'utf-8');
       this.users = JSON.parse(fileContent);
-      console.log(`Loaded ${this.users.length} users from DB.json`);
+      // Usuarios cargados correctamente
     } catch (error) {
-      console.error('Error loading users:', error);
+      // Error al cargar usuarios
       this.users = [];
     }
   }
@@ -41,26 +43,27 @@ export class UsersService {
   getUsers(params: GetUsersParams) {
     let filteredUsers = [...this.users];
 
-    // Apply search filter
+    // Aplicar filtro de búsqueda
     if (params.search) {
       const searchLower = params.search.toLowerCase();
       filteredUsers = filteredUsers.filter(
         (user) =>
           user.name?.toLowerCase().includes(searchLower) ||
           user.lastName?.toLowerCase().includes(searchLower) ||
+          user.username?.toLowerCase().includes(searchLower) ||
           user.email?.toLowerCase().includes(searchLower) ||
           user.phone?.includes(params.search)
       );
     }
 
-    // Apply active filter
+    // Aplicar filtro de estado activo
     if (params.isActive !== undefined) {
       filteredUsers = filteredUsers.filter(
         (user) => user.isActive === params.isActive
       );
     }
 
-    // Calculate pagination
+    // Calcular paginación
     const totalItems = filteredUsers.length;
     const totalPages = Math.ceil(totalItems / params.limit);
     const startIndex = (params.page - 1) * params.limit;
@@ -80,12 +83,12 @@ export class UsersService {
     };
   }
 
-  // Method to get all users without pagination (for testing)
+  // Método para obtener todos los usuarios sin paginación
   getAllUsers() {
     return this.users;
   }
 
-  // Get user by ID
+  // Obtener usuario por ID
   getUserById(id: string) {
     const user = this.users.find(u => u.id && u.id.$oid === id);
     if (!user) {
@@ -94,15 +97,19 @@ export class UsersService {
     return user;
   }
 
-  // Create new user
+  // Crear nuevo usuario
   createUser(userData: Omit<User, 'id'>) {
+    const username = userData.username || this.generateUsername(userData.name, userData.lastName);
+
     const newUser: User = {
       id: { $oid: this.generateId() },
       name: userData.name,
       lastName: userData.lastName,
+      username: username,
       email: userData.email,
       phone: userData.phone,
       isActive: userData.isActive ?? true,
+      photo: userData.photo,
     };
 
     this.users.push(newUser);
@@ -110,7 +117,7 @@ export class UsersService {
     return newUser;
   }
 
-  // Update user
+  // Actualizar usuario
   updateUser(id: string, userData: Partial<Omit<User, 'id'>>) {
     const userIndex = this.users.findIndex(u => u.id && u.id.$oid === id);
     if (userIndex === -1) {
@@ -126,28 +133,59 @@ export class UsersService {
     return this.users[userIndex];
   }
 
-  // Deactivate user (soft delete)
+  // Desactivar usuario (eliminación lógica)
   deactivateUser(id: string) {
     return this.updateUser(id, { isActive: false });
   }
 
-  // Activate user
+  // Activar usuario
   activateUser(id: string) {
     return this.updateUser(id, { isActive: true });
   }
 
-  // Helper methods
+  // Métodos auxiliares
   private generateId(): string {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  private generateUsername(name: string, lastName: string): string {
+    if (!name || !lastName) return '';
+
+    const firstLetter = name.charAt(0).toUpperCase();
+    const firstLastName = lastName.split(' ')[0]; // Tomar primera palabra del apellido
+
+    return firstLetter + firstLastName;
+  }
+
+  private addUsernamesToExistingUsers() {
+    let needsSave = false;
+    let count = 0;
+
+    this.users.forEach(user => {
+      if (!user.username && user.name && user.lastName) {
+        (user as any).username = this.generateUsername(user.name, user.lastName);
+        needsSave = true;
+        count++;
+      }
+    });
+
+    // Se encontraron usuarios sin username
+
+    if (needsSave) {
+      this.saveUsers();
+      // Usernames generados para usuarios existentes
+    } else {
+      // Todos los usuarios ya tienen username
+    }
   }
 
   private saveUsers() {
     try {
       const dbPath = path.join(process.cwd(), 'DB.json');
       fs.writeFileSync(dbPath, JSON.stringify(this.users, null, 2));
-      console.log('Users saved to DB.json');
+      // Usuarios guardados correctamente
     } catch (error) {
-      console.error('Error saving users:', error);
+      // Error al guardar usuarios
     }
   }
 }
